@@ -1,0 +1,23 @@
+[package]
+name = "Rust-Chat-App-using-gRPC-streaming"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+async-stream = "0.3.5"
+futures-util = "0.3.30"
+prost = "0.13.1"
+tokio = {version = "1.38.0", features = ["full"]}
+tokio-stream = "0.1.15"
+tonic = "0.12.0"
+
+[build-dependencies]
+tonic-build= "0.12.1"
+
+[[bin]]
+name = "grpc-server"
+path = "src/server.rs" 
+
+[[bin]]
+name = "grpc-client"
+path = "src/client.rs"
