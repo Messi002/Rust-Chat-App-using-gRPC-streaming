@@ -4,6 +4,7 @@ pub mod pb{
 
 
 use std::net::ToSocketAddrs;
+use std::os::linux::raw::stat;
 use std::result;
 use futures_util::future::ok;
 use tokio::sync::mpsc;
@@ -48,16 +49,32 @@ impl pb::chat_service_server::ChatService for ChatServer{
                     ).await.unwrap();
                 }
 
-                Err() => {
+                Err(status) => {
                     println!("Error: {}", status);
                     break;
                 }
                }
 
             }
-        })
+
+            println!("Chat Session Ended...");
+        });
+
+        let out = ReceiverStream::new(rx);
+
+        Ok(
+            Response::new(Box::pin(out) as Self::ChatMessageStreamingStream)
+        )
     }
 }
-fn  main() {
-    
+
+#[tokio::main]
+async fn  main()-> Result<(), Box<dyn std::error::Error>> {
+    let server = ChatServer {};
+
+    println!("Server started...");
+    Server::builder().add_service(pb::chat_service_server::ChatServiceServer::new(server))
+    .serve("[::1]:50051".to_socket_addrs().unwrap().next().unwrap()).await.unwrap();
+
+    Ok(())
 }
