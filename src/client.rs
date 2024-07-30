@@ -3,6 +3,7 @@ pub mod pb{
 }
 
 
+use futures_util::future::ok;
 use tokio::io;
 use tokio::io::{AsyncBufReadExt, BufReader};
 use tokio_stream::StreamExt;
@@ -58,6 +59,16 @@ async fn chat(client: & mut ChatServiceClient<Channel>){
     }
 }
 
-fn main(){
-// 16:43
+
+#[tokio::main]
+async fn main()-> Result<(), Box<dyn std::error::Error>>{
+ let mut client = ChatServiceClient::connect( "http://[::1]:50051").await.unwrap();
+ println!("Client Started");
+
+ chat(&mut client).await;
+
+
+ ok(())
+
+
 }
