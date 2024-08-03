@@ -4,23 +4,30 @@ pub mod pb{
 
 
 use std::net::ToSocketAddrs;
-use std::os::linux::raw::stat;
-use std::result;
-use futures_util::future::ok;
+// use std::os::linux::raw::stat;
+// use std::result;
+// use futures_util::future::ok;
 use tokio::sync::mpsc;
 use tokio_stream::{Stream, StreamExt};
 use tokio_stream::wrappers::ReceiverStream;
 use tonic::{Streaming, Request, Response, Status};
-use tonic::transport::server;
+use tonic::transport::Server;
 use std::pin::Pin;
 use pb::ChatMessage;
 
 
-
-#[derive(Debug, Default)]
+#[derive(Debug)]
 pub struct ChatServer {
     messages: mpsc::Sender<ChatMessage>,
 }
+
+
+impl ChatServer {
+    fn new(messages: mpsc::Sender<ChatMessage>) -> Self {
+        ChatServer { messages }
+    }
+}
+
 
 type RepsonseStream = Pin<Box<dyn Stream<Item = Result<ChatMessage, Status>> + Send>>;
 
@@ -68,13 +75,29 @@ impl pb::chat_service_server::ChatService for ChatServer{
     }
 }
 
+// #[tokio::main]
+// async fn  main()-> Result<(), Box<dyn std::error::Error>> {
+//     let server = ChatServer {};
+
+//     println!("Server started...");
+//     Server::builder().add_service(pb::chat_service_server::ChatServiceServer::new(server))
+//     .serve("[::1]:50051".to_socket_addrs().unwrap().next().unwrap()).await.unwrap();
+
+//     Ok(())
+// }
+
+
 #[tokio::main]
-async fn  main()-> Result<(), Box<dyn std::error::Error>> {
-    let server = ChatServer {};
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let (tx, _rx) = mpsc::channel(128);
+    let server = ChatServer::new(tx);
 
     println!("Server started...");
-    Server::builder().add_service(pb::chat_service_server::ChatServiceServer::new(server))
-    .serve("[::1]:50051".to_socket_addrs().unwrap().next().unwrap()).await.unwrap();
+    Server::builder()
+        .add_service(pb::chat_service_server::ChatServiceServer::new(server))
+        .serve("[::1]:50051".to_socket_addrs().unwrap().next().unwrap())
+        .await
+        .unwrap();
 
     Ok(())
 }

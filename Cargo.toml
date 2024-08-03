@@ -2,6 +2,7 @@
 name = "Rust-Chat-App-using-gRPC-streaming"
 version = "0.1.0"
 edition = "2021"
+build = "build.rs"
 
 [dependencies]
 async-stream = "0.3.5"
